@@ -74,10 +74,12 @@ app.add_middleware(LoggingMiddleware)
 import backend.auth as auth
 import backend.routers.content as content
 import backend.routers.dashboard as dashboard
+import backend.routers.tenant as tenant
 # Include routers
 app.include_router(content.router, prefix="/api/content", tags=["content"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
+app.include_router(tenant.router, prefix="/api/tenant", tags=["tenant"])
 
 
 @app.get("/")

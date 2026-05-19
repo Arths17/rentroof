@@ -229,6 +229,81 @@ export const api = {
       return res.json()
     },
   },
+
+  // ==================== TENANT ENDPOINTS ====================
+  tenant: {
+    getPortal: async () => {
+      const res = await fetch(`${API_BASE}/tenant/portal`)
+      if (!res.ok) throw new Error('Failed to fetch tenant portal')
+      return res.json()
+    },
+
+    getMaintenance: async () => {
+      const res = await fetch(`${API_BASE}/tenant/maintenance`)
+      if (!res.ok) throw new Error('Failed to fetch maintenance requests')
+      return res.json()
+    },
+
+    payRent: async (
+      tenantId: string,
+      unitId: string,
+      amount: number,
+      paymentMethod: string
+    ) => {
+      const res = await fetch(`${API_BASE}/tenant/pay-rent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId, unitId, amount, paymentMethod }),
+      })
+      if (!res.ok) throw new Error('Payment failed')
+      return res.json()
+    },
+
+    submitMaintenance: async (
+      tenantId: string,
+      unitId: string,
+      title: string,
+      description: string,
+      priority: string = 'medium',
+      images: string[] = []
+    ) => {
+      const res = await fetch(`${API_BASE}/tenant/maintenance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId,
+          unitId,
+          title,
+          description,
+          priority,
+          images,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to submit maintenance request')
+      return res.json()
+    },
+
+    getMoveInWalkthrough: async () => {
+      const res = await fetch(`${API_BASE}/tenant/move-in-walkthrough`)
+      if (!res.ok) throw new Error('Failed to fetch move-in walkthrough')
+      return res.json()
+    },
+
+    submitMoveInWalkthrough: async (
+      tenantId: string,
+      unitId: string,
+      roomId: string,
+      photos: string[]
+    ) => {
+      const res = await fetch(`${API_BASE}/tenant/move-in-walkthrough`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId, unitId, roomId, photos }),
+      })
+      if (!res.ok) throw new Error('Failed to submit walkthrough photos')
+      return res.json()
+    },
+  },
 }
 
 export default api

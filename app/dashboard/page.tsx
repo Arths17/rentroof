@@ -248,6 +248,12 @@ export default function DashboardPage() {
           >
             🔒 Deposits
           </button>
+          <button 
+            className={`nav-btn${pathname === '/tenant/portal' ? ' active' : ''}`}
+            onClick={() => router.push('/tenant/portal')}
+          >
+            👥 Tenants
+          </button>
         </div>
 
         <div className="dash-welcome">
@@ -324,6 +330,20 @@ export default function DashboardPage() {
             <div className="setup-step">
               <div className="setup-step-num">2</div>
               <div className="setup-step-body">
+                <h4>Invite your tenants</h4>
+                <p>Send each tenant an invite link. They join free and are set up in minutes.</p>
+                <button 
+                  className="setup-step-action"
+                  onClick={() => router.push('/tenant/portal')}
+                >
+                  Send invites &rarr;
+                </button>
+              </div>
+            </div>
+
+            <div className="setup-step">
+              <div className="setup-step-num">3</div>
+              <div className="setup-step-body">
                 <h4>Upload your leases</h4>
                 <p>Store signed leases and documents. Both parties always have access.</p>
                 <button 
@@ -334,14 +354,6 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
-
-            <div className="setup-step">
-              <div className="setup-step-num">3</div>
-              <div className="setup-step-body">
-                <h4>Manage your deposits</h4>
-                <p>Track security deposits held for your tenants.</p>
-                <button 
-                  className="setup-step-action"
                   onClick={() => router.push('/deposits')}
                 >
                   View deposits &rarr;
