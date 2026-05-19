@@ -25,15 +25,7 @@ export default function LoginPage() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, u => {
       if (u) {
-        ;(async () => {
-          try {
-            await api.tenant.getPortal()
-            router.replace('/tenant')
-          } catch (e) {
-            console.error('Error checking tenant portal:', e)
-            router.replace('/dashboard')
-          }
-        })()
+        router.replace('/dashboard')
       }
     })
     return unsub
@@ -46,13 +38,7 @@ export default function LoginPage() {
     setGoogleLoading(true)
     try {
       await signInWithPopup(auth, provider)
-      try {
-        await api.tenant.getPortal()
-        router.replace('/tenant')
-      } catch (e) {
-        console.error('Error checking tenant portal:', e)
-        router.replace('/dashboard')
-      }
+      router.replace('/dashboard')
     } catch (err: unknown) {
       setGoogleLoading(false)
       console.error('Google sign-in error:', err)
@@ -69,13 +55,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      try {
-        await api.tenant.getPortal()
-        router.replace('/tenant')
-      } catch (e) {
-        console.error('Error checking tenant portal:', e)
-        router.replace('/dashboard')
-      }
+      router.replace('/dashboard')
     } catch (err: unknown) {
       setLoading(false)
       console.error('Email sign-in error:', err)
