@@ -30,6 +30,7 @@ export default function LoginPage() {
             await api.tenant.getPortal()
             router.replace('/tenant')
           } catch (e) {
+            console.error('Error checking tenant portal:', e)
             router.replace('/dashboard')
           }
         })()
@@ -49,10 +50,12 @@ export default function LoginPage() {
         await api.tenant.getPortal()
         router.replace('/tenant')
       } catch (e) {
+        console.error('Error checking tenant portal:', e)
         router.replace('/dashboard')
       }
     } catch (err: unknown) {
       setGoogleLoading(false)
+      console.error('Google sign-in error:', err)
       const code = (err as { code?: string }).code ?? ''
       setError(FRIENDLY_ERRORS[code] ?? 'Something went wrong. Please try again.')
     }
@@ -70,10 +73,12 @@ export default function LoginPage() {
         await api.tenant.getPortal()
         router.replace('/tenant')
       } catch (e) {
+        console.error('Error checking tenant portal:', e)
         router.replace('/dashboard')
       }
     } catch (err: unknown) {
       setLoading(false)
+      console.error('Email sign-in error:', err)
       const code = (err as { code?: string }).code ?? ''
       setError(FRIENDLY_ERRORS[code] ?? 'Something went wrong. Please try again.')
     }
