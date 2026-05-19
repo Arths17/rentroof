@@ -246,12 +246,6 @@ export default function PropertiesPage() {
         >
           🔒 Deposits
         </button>
-        <button 
-          className={`nav-btn${pathname === '/tenant/portal' ? ' active' : ''}`}
-          onClick={() => router.push('/tenant/portal')}
-        >
-          👥 Tenants
-        </button>
       </div>
       
       <div className="page-header">
