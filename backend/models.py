@@ -78,6 +78,7 @@ class Unit(BaseModel):
     id: str
     name: str
     tenant: str
+    email: str = ""
     rentAmount: float
     status: str  # 'paid', 'pending', 'late'
     dueDate: Optional[str] = None
@@ -104,6 +105,7 @@ class PropertyCreateRequest(BaseModel):
 class UnitCreateRequest(BaseModel):
     name: str
     tenant: Optional[str] = ""
+    email: str
     rentAmount: float
     status: str = "vacant"
     dueDate: Optional[int] = None

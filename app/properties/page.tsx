@@ -19,6 +19,7 @@ interface Property {
 interface UnitFormState {
   name: string
   tenant: string
+  email: string
   rentAmount: string
   status: string
   dueDate: string
@@ -43,6 +44,7 @@ export default function PropertiesPage() {
   const [unitFormData, setUnitFormData] = useState<UnitFormState>({
     name: '',
     tenant: '',
+    email: '',
     rentAmount: '',
     status: 'vacant',
     dueDate: '',
@@ -124,6 +126,7 @@ export default function PropertiesPage() {
         propertyId,
         unitFormData.name,
         unitFormData.tenant,
+        unitFormData.email,
         rentAmount,
         unitFormData.status,
         unitFormData.dueDate
@@ -137,6 +140,7 @@ export default function PropertiesPage() {
         setUnitFormData({
           name: '',
           tenant: '',
+          email: '',
           rentAmount: '',
           status: 'vacant',
           dueDate: '',
@@ -184,6 +188,7 @@ export default function PropertiesPage() {
     setUnitFormData({
       name: unit.name,
       tenant: unit.tenant,
+      email: unit.email || '',
       rentAmount: String(unit.rentAmount),
       status: unit.status,
       dueDate: unit.dueDate || '',
@@ -199,6 +204,7 @@ export default function PropertiesPage() {
         unitId,
         unitFormData.name,
         unitFormData.tenant,
+        unitFormData.email,
         rentAmount,
         unitFormData.status,
         unitFormData.dueDate
@@ -210,6 +216,7 @@ export default function PropertiesPage() {
         setUnitFormData({
           name: '',
           tenant: '',
+          email: '',
           rentAmount: '',
           status: 'vacant',
           dueDate: '',
@@ -405,6 +412,16 @@ export default function PropertiesPage() {
                       placeholder="Leave blank if vacant"
                     />
                   </div>
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      value={unitFormData.email}
+                      onChange={(e) => setUnitFormData({ ...unitFormData, email: e.target.value })}
+                      placeholder="tenant@example.com"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
@@ -470,6 +487,14 @@ export default function PropertiesPage() {
                                 type="text"
                                 value={unitFormData.tenant}
                                 onChange={(e) => setUnitFormData({ ...unitFormData, tenant: e.target.value })}
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Email</label>
+                              <input
+                                type="email"
+                                value={unitFormData.email}
+                                onChange={(e) => setUnitFormData({ ...unitFormData, email: e.target.value })}
                               />
                             </div>
                           </div>

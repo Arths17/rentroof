@@ -102,6 +102,7 @@ export const api = {
       propertyId: string,
       name: string,
       tenant: string,
+      email: string,
       rentAmount: number,
       status: string = 'vacant',
       dueDate: string = ''
@@ -112,6 +113,7 @@ export const api = {
         body: JSON.stringify({
           name,
           tenant,
+          email,
           rentAmount,
           status,
           dueDate: dueDate || null,
@@ -142,6 +144,7 @@ export const api = {
       unitId: string,
       name: string,
       tenant: string,
+      email: string,
       rentAmount: number,
       status: string = 'vacant',
       dueDate: string = ''
@@ -154,6 +157,7 @@ export const api = {
           body: JSON.stringify({
             name,
             tenant,
+            email,
             rentAmount,
             status,
             dueDate: dueDate || null,

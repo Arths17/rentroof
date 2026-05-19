@@ -80,6 +80,8 @@ app.include_router(content.router, prefix="/api/content", tags=["content"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(tenant.router, prefix="/api/tenant", tags=["tenant"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
+app.include_router(tenant.router, prefix="/api/tenant", tags=["tenant"])
 
 
 @app.get("/")

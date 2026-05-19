@@ -57,6 +57,9 @@ service cloud.firestore {
 
     /* ── Units ── */
     match /units/{unitId} {
+      /* Backend API (unauthenticated) can create/update units */
+      allow create, update: if request.auth == null;
+
       /* Landlord full access */
       allow read, update, delete: if request.auth != null
         && request.auth.uid == resource.data.landlordUid;

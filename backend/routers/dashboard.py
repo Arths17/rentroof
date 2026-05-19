@@ -4,11 +4,15 @@ from backend.models import (
     MaintenanceRequest, MaintenanceCreateRequest, Deposit, DepositCreateRequest,
     Unit, UnitCreateRequest
 )
+from backend.firebase_client import firebase_client
 from typing import List
 from datetime import datetime
 from pathlib import Path
 import json
 import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -161,6 +165,7 @@ async def create_property_unit(property_id: str, request: UnitCreateRequest):
                 id=f"unit_{datetime.now().timestamp()}",
                 name=request.name,
                 tenant=request.tenant or "",
+                email=request.email,
                 rentAmount=request.rentAmount,
                 status=request.status,
                 dueDate=str(request.dueDate) if request.dueDate is not None else None,
@@ -177,6 +182,17 @@ async def create_property_unit(property_id: str, request: UnitCreateRequest):
 
             properties[index] = updated_property
             write_properties(properties)
+
+            # Sync unit to Firebase
+            try:
+                firebase_client.write_unit(
+                    property_id,
+                    new_unit.id,
+                    new_unit.model_dump()
+                )
+            except Exception as e:
+                logger.error(f"Failed to sync unit to Firebase: {str(e)}")
+                # Continue anyway - JSON is source of truth
 
             return {
                 "success": True,
@@ -255,6 +271,7 @@ async def update_property_unit(property_id: str, unit_id: str, request: UnitCrea
                     id=unit.id,
                     name=request.name,
                     tenant=request.tenant or "",
+                    email=request.email,
                     rentAmount=request.rentAmount,
                     status=request.status,
                     dueDate=str(request.dueDate) if request.dueDate is not None else None,
@@ -275,6 +292,16 @@ async def update_property_unit(property_id: str, unit_id: str, request: UnitCrea
 
                 properties[prop_index] = updated_property
                 write_properties(properties)
+
+                # Sync unit to Firebase
+                try:
+                    firebase_client.update_unit(
+                        unit_id,
+                        updated_unit.model_dump()
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to sync unit to Firebase: {str(e)}")
+                    # Continue anyway - JSON is source of truth
 
                 return {
                     "success": True,

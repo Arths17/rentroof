@@ -1,0 +1,14 @@
+[
+  {
+    "id": "maint_req_1779154523.362634",
+    "tenantId": "tenant_be36d5f7958c107beadb54b22a5b6651",
+    "unitId": "unit_1778976798.151654",
+    "title": "Broken Door Handle",
+    "description": "Bathroom Door Handle is broken",
+    "priority": "high",
+    "status": "completed",
+    "submittedDate": "2026-05-18T20:35:23.362649",
+    "images": [],
+    "completedDate": "2026-05-18T20:35:38.618168"
+  }
+]
