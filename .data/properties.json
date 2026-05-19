@@ -15,6 +15,16 @@
         "dueDate": "2",
         "paidDate": "2026-05-16T19:13:34.552478",
         "daysLate": null
+      },
+      {
+        "id": "unit_1779153483.608616",
+        "name": "2A",
+        "tenant": "Laverne",
+        "rentAmount": 29739.0,
+        "status": "occupied",
+        "dueDate": "1",
+        "paidDate": null,
+        "daysLate": null
       }
     ]
   }
