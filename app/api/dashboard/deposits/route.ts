@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   // TODO: Fetch from database filtered by user ID
 
   // Start with empty list - landlord records deposits
-  const deposits = []
+  const deposits: any[] = []
 
   return NextResponse.json(deposits)
 }

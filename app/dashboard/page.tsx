@@ -354,6 +354,14 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
+
+            <div className="setup-step">
+              <div className="setup-step-num">4</div>
+              <div className="setup-step-body">
+                <h4>Manage your deposits</h4>
+                <p>Track security deposits held for your tenants.</p>
+                <button 
+                  className="setup-step-action"
                   onClick={() => router.push('/deposits')}
                 >
                   View deposits &rarr;
