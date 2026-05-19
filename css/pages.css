@@ -1017,7 +1017,7 @@
 }
 
 .maintenance-form {
-  background: var(--paper);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 2rem;
@@ -1384,7 +1384,7 @@
 }
 
 .walkthrough-form {
-  background: var(--paper);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 2rem;
@@ -1479,7 +1479,7 @@
 }
 
 .room-status {
-  background: var(--paper);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "dep_1779145255.595453",
+    "unit": "unit_test456",
+    "tenant": "",
+    "amount": 500.0,
+    "dateReceived": "2026-05-16T00:00:00Z",
+    "moveInDate": "2026-05-16T00:00:00Z",
+    "moveOutDate": null,
+    "status": "held",
+    "returnDeadline": null,
+    "returnedDate": null,
+    "returnAmount": null
+  },
+  {
+    "id": "dep_1779148518.017923",
+    "unit": "unit_test456",
+    "tenant": "",
+    "amount": 600.0,
+    "dateReceived": "2026-05-18T00:00:00Z",
+    "moveInDate": "2026-05-18T00:00:00Z",
+    "moveOutDate": null,
+    "status": "held",
+    "returnDeadline": null,
+    "returnedDate": null,
+    "returnAmount": null
+  },
+  {
+    "id": "dep_1779148743.651494",
+    "unit": "unit_1778976798.151654",
+    "tenant": "Atharv Ranjan",
+    "amount": 700.0,
+    "dateReceived": "2026-05-18T00:00:00Z",
+    "moveInDate": "2026-05-18T00:00:00Z",
+    "moveOutDate": null,
+    "status": "held",
+    "returnDeadline": null,
+    "returnedDate": null,
+    "returnAmount": null
+  }
+]

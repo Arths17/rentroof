@@ -8,6 +8,7 @@ from typing import List
 from datetime import datetime
 from pathlib import Path
 import json
+import hashlib
 
 router = APIRouter()
 
@@ -19,6 +20,49 @@ DEPOSITS_DB = []
 BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = BASE_DIR / ".data"
 PROPERTIES_FILE = DATA_DIR / "properties.json"
+DEPOSITS_FILE = DATA_DIR / "deposits.json"
+
+
+def read_deposits() -> list[Deposit]:
+    try:
+        if not DEPOSITS_FILE.exists():
+            return []
+        with DEPOSITS_FILE.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception as e:
+        print(f"Error reading deposits: {e}")
+        return []
+
+
+def write_deposits(deposits: list[Deposit]) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # convert pydantic models or dicts
+    serializable = []
+    for d in deposits:
+        if hasattr(d, 'model_dump'):
+            serializable.append(d.model_dump())
+        else:
+            serializable.append(d)
+    with DEPOSITS_FILE.open("w", encoding="utf-8") as f:
+        json.dump(serializable, f, indent=2)
+
+
+def map_tenant_id_to_name(tenant_id: str) -> str:
+    """Attempt to map a tenantId (md5 hash of the tenant name) to the tenant's name
+    by scanning properties and units."""
+    try:
+        props = read_properties()
+        for prop in props:
+            for unit in prop.units:
+                name = getattr(unit, 'tenant', '')
+                if not name:
+                    continue
+                if hashlib.md5(name.encode()).hexdigest() == tenant_id:
+                    return name
+    except Exception:
+        pass
+    return ""
 
 
 def read_properties() -> list[Property]:
@@ -500,8 +544,12 @@ async def update_maintenance_status(request_id: str, request: dict):
 async def get_deposits():
     """Get all deposit records"""
     # TODO: Fetch from database filtered by user
-    # Start with empty list - landlord records deposits
-    return []
+    try:
+        deposits = read_deposits()
+        return deposits
+    except Exception as e:
+        print(f"Error fetching deposits: {e}")
+        return []
 
 
 @router.post("/deposits", response_model=dict, status_code=status.HTTP_201_CREATED)
@@ -514,18 +562,24 @@ async def create_deposit(request: DepositCreateRequest):
                 detail="Unit ID and amount are required"
             )
         
+        tenant_name = ""
+        if hasattr(request, 'tenantId') and request.tenantId:
+            tenant_name = map_tenant_id_to_name(request.tenantId)
+
         deposit = Deposit(
             id=f"dep_{datetime.now().timestamp()}",
             unit=request.unitId,
-            tenant="",  # TODO: Get tenant from database
+            tenant=tenant_name or "",
             amount=request.amount,
             dateReceived=request.dateReceived,
             moveInDate=request.dateReceived,
             status="held",
         )
         
-        DEPOSITS_DB.append(deposit)
-        
+        deposits = read_deposits()
+        deposits.append(deposit.model_dump())
+        write_deposits(deposits)
+
         return {
             "success": True,
             "deposit": deposit.model_dump()

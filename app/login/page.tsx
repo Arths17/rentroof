@@ -10,6 +10,7 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth'
 import { auth, provider, FRIENDLY_ERRORS } from '@/lib/firebase'
+import api from '@/lib/api'
 import GoogleButton from '@/components/auth/GoogleButton'
 
 export default function LoginPage() {
@@ -23,7 +24,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, u => {
-      if (u) router.replace('/dashboard')
+      if (u) {
+        ;(async () => {
+          try {
+            await api.tenant.getPortal()
+            router.replace('/tenant')
+          } catch (e) {
+            router.replace('/dashboard')
+          }
+        })()
+      }
     })
     return unsub
   }, [router])
@@ -35,7 +45,12 @@ export default function LoginPage() {
     setGoogleLoading(true)
     try {
       await signInWithPopup(auth, provider)
-      router.replace('/dashboard')
+      try {
+        await api.tenant.getPortal()
+        router.replace('/tenant')
+      } catch (e) {
+        router.replace('/dashboard')
+      }
     } catch (err: unknown) {
       setGoogleLoading(false)
       const code = (err as { code?: string }).code ?? ''
@@ -51,7 +66,12 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.replace('/dashboard')
+      try {
+        await api.tenant.getPortal()
+        router.replace('/tenant')
+      } catch (e) {
+        router.replace('/dashboard')
+      }
     } catch (err: unknown) {
       setLoading(false)
       const code = (err as { code?: string }).code ?? ''
