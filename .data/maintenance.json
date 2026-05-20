@@ -1,14 +1,14 @@
 [
   {
-    "id": "maint_req_1779154523.362634",
+    "id": "maint_req_1779239027.759237",
     "tenantId": "tenant_be36d5f7958c107beadb54b22a5b6651",
-    "unitId": "unit_1778976798.151654",
+    "unitId": "unit_1779238554.491554",
     "title": "Broken Door Handle",
-    "description": "Bathroom Door Handle is broken",
-    "priority": "high",
+    "description": "There is a broken door handle in the Master Bedroom bathroom.",
+    "priority": "medium",
     "status": "completed",
-    "submittedDate": "2026-05-18T20:35:23.362649",
+    "submittedDate": "2026-05-19T20:03:47.759249",
     "images": [],
-    "completedDate": "2026-05-18T20:35:38.618168"
+    "completedDate": "2026-05-19T20:04:33.549279"
   }
 ]

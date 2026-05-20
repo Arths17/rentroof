@@ -4,7 +4,6 @@ from backend.models import (
     MaintenanceRequest, MaintenanceCreateRequest, Deposit, DepositCreateRequest,
     Unit, UnitCreateRequest
 )
-from backend.firebase_client import firebase_client
 from typing import List
 from datetime import datetime
 from pathlib import Path
@@ -183,17 +182,6 @@ async def create_property_unit(property_id: str, request: UnitCreateRequest):
             properties[index] = updated_property
             write_properties(properties)
 
-            # Sync unit to Firebase
-            try:
-                firebase_client.write_unit(
-                    property_id,
-                    new_unit.id,
-                    new_unit.model_dump()
-                )
-            except Exception as e:
-                logger.error(f"Failed to sync unit to Firebase: {str(e)}")
-                # Continue anyway - JSON is source of truth
-
             return {
                 "success": True,
                 "property": updated_property.model_dump(),
@@ -292,16 +280,6 @@ async def update_property_unit(property_id: str, unit_id: str, request: UnitCrea
 
                 properties[prop_index] = updated_property
                 write_properties(properties)
-
-                # Sync unit to Firebase
-                try:
-                    firebase_client.update_unit(
-                        unit_id,
-                        updated_unit.model_dump()
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to sync unit to Firebase: {str(e)}")
-                    # Continue anyway - JSON is source of truth
 
                 return {
                     "success": True,

@@ -1,31 +1,20 @@
 [
   {
-    "id": "prop_1778976779.123121",
-    "address": "9965",
-    "city": "irvingston",
-    "state": "penn",
-    "zipCode": "98640",
+    "id": "prop_1779238502.590417",
+    "address": "8928 Forest Lane",
+    "city": "Detroit",
+    "state": "Michigan",
+    "zipCode": "29837",
     "units": [
       {
-        "id": "unit_1778976798.151654",
-        "name": "1A",
+        "id": "unit_1779238554.491554",
+        "name": "001",
         "tenant": "Atharv Ranjan",
-        "email": "testing123@gmail.com",
-        "rentAmount": 3665.0,
+        "email": "test123@gmail.com",
+        "rentAmount": 2000.0,
         "status": "paid",
-        "dueDate": "2",
-        "paidDate": "2026-05-16T19:13:34.552478",
-        "daysLate": null
-      },
-      {
-        "id": "unit_1779153483.608616",
-        "name": "2A",
-        "tenant": "Laverne",
-        "email": "lavtest123@gmail.com",
-        "rentAmount": 29739.0,
-        "status": "occupied",
         "dueDate": "1",
-        "paidDate": null,
+        "paidDate": "2026-05-19T20:03:06.217222",
         "daysLate": null
       }
     ]

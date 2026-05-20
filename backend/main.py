@@ -54,20 +54,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 
 # Add catch-all OPTIONS handler at app level
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str):
-    """Handle all OPTIONS requests"""
-    logger.info(f"Catch-all OPTIONS handler: /{full_path}")
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Max-Age": "600",
-        }
-    )
-
 app.add_middleware(LoggingMiddleware)
 
 # Import routers
