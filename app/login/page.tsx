@@ -4,32 +4,27 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  onAuthStateChanged,
   signInWithPopup,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
 } from 'firebase/auth'
 import { auth, provider, FRIENDLY_ERRORS } from '@/lib/firebase'
 import api from '@/lib/api'
 import GoogleButton from '@/components/auth/GoogleButton'
+import { useSession } from '@/hooks/useSession'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
-  const [resetSent, setResetSent] = useState(false)
   const [loading, setLoading]   = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const { loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => {
-      if (u) {
-        router.replace('/dashboard')
-      }
-    })
-    return unsub
-  }, [router])
+    if (!sessionLoading && authenticated) {
+      router.replace('/dashboard')
+    }
+  }, [authenticated, router, sessionLoading])
 
   const clearError = () => setError('')
 
@@ -37,7 +32,14 @@ export default function LoginPage() {
     clearError()
     setGoogleLoading(true)
     try {
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      const googleUser = result.user
+      await api.auth.signup(
+        googleUser.email || 'google-user@example.com',
+        'google-oauth',
+        googleUser.displayName || googleUser.email?.split('@')[0] || 'Google User',
+        'growth'
+      )
       router.replace('/dashboard')
     } catch (err: unknown) {
       setGoogleLoading(false)
@@ -54,7 +56,7 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      await api.auth.login(email, password)
       router.replace('/dashboard')
     } catch (err: unknown) {
       setLoading(false)
@@ -67,14 +69,11 @@ export default function LoginPage() {
   async function handleForgot(e: React.MouseEvent) {
     e.preventDefault()
     clearError()
-    if (!email) { setError('Enter your email address first, then click Forgot password.'); return }
-    try {
-      await sendPasswordResetEmail(auth, email)
-      setResetSent(true)
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? ''
-      setError(FRIENDLY_ERRORS[code] ?? 'Something went wrong. Please try again.')
-    }
+    setError('Password reset is not enabled in this build.')
+  }
+
+  if (sessionLoading) {
+    return <div className="loading">Loading...</div>
   }
 
   return (
@@ -116,16 +115,6 @@ export default function LoginPage() {
           <GoogleButton onClick={handleGoogle} loading={googleLoading} />
 
           <div className="auth-divider"><span>or</span></div>
-
-          {resetSent && (
-            <div style={{
-              fontSize: '0.72rem', color: 'var(--paid)',
-              background: 'var(--paid-bg)', border: '1px solid rgba(34,192,107,0.2)',
-              borderRadius: '3px', padding: '0.75rem 1rem', marginBottom: '1rem', lineHeight: 1.5,
-            }}>
-              Reset email sent. Check your inbox.
-            </div>
-          )}
 
           {error && <div className="auth-error show">{error}</div>}
 

@@ -2,8 +2,14 @@
 .next/
 out/
 
+# Test outputs
+coverage/
+playwright-report/
+test-results/
+
 # Dependencies
 node_modules/
+backend/venv/
 
 # Environment variables
 .env
@@ -16,6 +22,12 @@ node_modules/
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.pyc
+backend/**/__pycache__/
+backend/**/*.py[cod]
 
 # OS
 .DS_Store

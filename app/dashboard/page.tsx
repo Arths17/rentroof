@@ -4,14 +4,8 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import {
-  onAuthStateChanged,
-  signOut,
-  type User,
-  deleteUser,
-} from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import api from '@/lib/api'
+import { useSession } from '@/hooks/useSession'
 
 type DashboardSummary = {
   units: number
@@ -39,7 +33,6 @@ type Payment = {
 export default function DashboardPage() {
   const router = useRouter()
   const pathname = usePathname()
-  const [user, setUser]       = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [payments, setPayments] = useState<Payment[]>([])
   const [summary, setSummary] = useState<DashboardSummary>({
@@ -48,12 +41,19 @@ export default function DashboardPage() {
     overduePayments: 0,
     openMaintenance: 0,
   })
+  const { user, loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
-      if (!u) { router.replace('/login'); return }
-      setUser(u)
+    if (sessionLoading) {
+      return
+    }
 
+    if (!authenticated) {
+      router.replace('/login')
+      return
+    }
+
+    const loadDashboard = async () => {
       try {
         const [properties, rentStatus, maintenance, allPayments] = await Promise.all([
           api.dashboard.getProperties(),
@@ -108,12 +108,13 @@ export default function DashboardPage() {
       } finally {
         setLoading(false)
       }
-    })
-    return unsub
-  }, [router])
+    }
+
+    loadDashboard()
+  }, [authenticated, router, sessionLoading])
 
   async function handleSignOut() {
-    await signOut(auth)
+    await api.auth.logout()
     router.replace('/login')
   }
 
@@ -139,52 +140,37 @@ export default function DashboardPage() {
       return
     }
 
-    const u = auth.currentUser
-    if (!u) {
+    const email = user?.email
+    if (!email) {
       alert('No user is signed in.')
       return
     }
 
     try {
-      console.log("Starting account deletion for:", u.email);
-      
-      // Notify backend to remove user data before deleting from Firebase
+      console.log('Starting account deletion for:', email)
+
       try {
-        console.log("Calling backend delete...");
-        const res = await fetch('http://localhost:8000/api/auth/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: u.email }),
-        })
-        console.log("Backend delete response:", res.status);
-        if (!res.ok) {
-          console.warn('Backend cleanup failed:', await res.json())
+        console.log('Calling backend delete...')
+        const backendResponse = await api.auth.delete(email)
+        console.log('Backend delete response:', backendResponse)
+        if (!backendResponse?.success) {
+          console.warn('Backend cleanup failed:', backendResponse)
         }
       } catch (err) {
         console.warn('Could not reach backend for cleanup:', err)
       }
 
-      console.log("Deleting from Firebase...");
-      await deleteUser(u)
-      console.log("✓ User deleted from Firebase");
-      
-      // After deletion, redirect to signup page
+      await api.auth.logout()
+      console.log('✓ User deleted and session cleared')
+
       router.replace('/signup')
     } catch (err: any) {
-      console.error("Delete account error:", err);
-      
-      // If deletion requires recent login, prompt user to re-authenticate
-      if (err?.code === 'auth/requires-recent-login') {
-        alert('Please sign out and sign in again to confirm account deletion.')
-        await signOut(auth)
-        router.replace('/login')
-        return
-      }
+      console.error('Delete account error:', err)
       alert('Failed to delete account: ' + (err?.message || err))
     }
   }
 
-  if (loading) {
+  if (loading || sessionLoading) {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center',
@@ -197,7 +183,7 @@ export default function DashboardPage() {
     )
   }
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'there'
+  const displayName = user?.name || user?.email?.split('@')[0] || 'there'
   const firstName   = displayName.split(' ')[0]
   const initials    = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 

@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  onAuthStateChanged,
   signInWithPopup,
-  createUserWithEmailAndPassword,
-  updateProfile,
 } from 'firebase/auth'
 import { auth, provider, FRIENDLY_ERRORS } from '@/lib/firebase'
+import api from '@/lib/api'
 import GoogleButton from '@/components/auth/GoogleButton'
+import { useSession } from '@/hooks/useSession'
 
 function strengthScore(password: string): number {
   let score = 0
@@ -30,13 +29,13 @@ export default function SignupPage() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const { loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => {
-      if (u) router.replace('/dashboard')
-    })
-    return unsub
-  }, [router])
+    if (!sessionLoading && authenticated) {
+      router.replace('/dashboard')
+    }
+  }, [authenticated, router, sessionLoading])
 
   const clearError = () => setError('')
   const score = strengthScore(password)
@@ -53,20 +52,16 @@ export default function SignupPage() {
       
       // Notify backend about the new user so it can send welcome email
       try {
-        console.log("Calling backend signup for Google user...");
-        const res = await fetch('http://localhost:8000/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            email: user.email,
-            password: 'google-oauth', // placeholder since it's OAuth
-            name: user.displayName || user.email?.split('@')[0] || 'User',
-            plan: 'growth',
-          }),
-        })
-        console.log("Backend response:", res.status);
-        if (!res.ok) {
-          console.warn('Backend signup warning:', await res.json())
+        console.log('Calling backend signup for Google user...')
+        const backendResponse = await api.auth.signup(
+          user.email || '',
+          'google-oauth',
+          user.displayName || user.email?.split('@')[0] || 'User',
+          'growth'
+        )
+        console.log('Backend response:', backendResponse)
+        if (!backendResponse?.success) {
+          console.warn('Backend signup warning:', backendResponse)
           // Don't block signup if backend fails
         }
       } catch (err) {
@@ -96,47 +91,30 @@ export default function SignupPage() {
     setLoading(true)
     console.log("Form validation passed, starting signup...");
     try {
-      console.log("Starting signup...");
-      const cred = await createUserWithEmailAndPassword(auth, email, password)
-      console.log("Firebase user created:", cred.user.email);
-      
-      await updateProfile(cred.user, { displayName: name })
-      console.log("Profile updated");
-      
-      // Notify FastAPI backend about the new signup so it can run server-side
-      // tasks (eg. send welcome email). FastAPI should be running on port 8000.
-      try {
-        console.log("Calling backend signup...");
-        const res = await fetch('http://localhost:8000/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name, plan: 'growth' }),
-        })
-        console.log("Backend response:", res.status, res.statusText);
+      console.log('Starting signup...')
+      const backendResponse = await api.auth.signup(email, password, name, 'growth')
+      console.log('Backend response:', backendResponse)
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: 'Signup proxy failed' }))
-          console.error("Backend error:", err);
-          setLoading(false)
-          setError(err.detail || err.error || 'Server signup failed')
-          return
-        }
-        console.log("Backend signup successful");
-      } catch (err) {
-        console.error("Backend fetch error:", err);
+      if (!backendResponse?.success) {
+        const err = backendResponse || { detail: 'Signup proxy failed' }
+        console.error('Backend error:', err)
         setLoading(false)
-        setError('Could not contact backend server. Please try again.')
+        setError(err.detail || err.error || 'Server signup failed')
         return
       }
 
-      console.log("Redirecting to dashboard...");
+      console.log('Redirecting to dashboard...')
       router.replace('/dashboard')
     } catch (err: unknown) {
       setLoading(false)
-      console.error("Signup error:", err);
+      console.error('Signup error:', err)
       const code = (err as { code?: string }).code ?? ''
       setError(FRIENDLY_ERRORS[code] ?? 'Something went wrong. Please try again.')
     }
+  }
+
+  if (sessionLoading) {
+    return <div className="loading">Loading...</div>
   }
 
   return (

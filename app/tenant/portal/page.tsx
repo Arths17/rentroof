@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import api from '@/lib/api'
 import DashboardHeader from '@/components/layout/DashboardHeader'
+import { useSession } from '@/hooks/useSession'
 
 interface TenantPortalData {
   tenant: {
@@ -45,14 +44,19 @@ export default function TenantPortalPage() {
   const [data, setData] = useState<TenantPortalData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
-      if (!u) {
-        router.push('/login')
-        return
-      }
+    if (sessionLoading) {
+      return
+    }
 
+    if (!authenticated) {
+      router.push('/login')
+      return
+    }
+
+    async function loadPortal() {
       try {
         const portalData = await api.tenant.getPortal()
         setData(portalData)
@@ -62,11 +66,12 @@ export default function TenantPortalPage() {
       } finally {
         setLoading(false)
       }
-    })
-    return unsub
-  }, [router])
+    }
 
-  if (loading) return <div className="loading">Loading tenant portal...</div>
+    loadPortal()
+  }, [authenticated, router, sessionLoading])
+
+  if (loading || sessionLoading) return <div className="loading">Loading tenant portal...</div>
   if (error) return <div className="error">Error: {error}</div>
   if (!data || !data.tenant) {
     return (

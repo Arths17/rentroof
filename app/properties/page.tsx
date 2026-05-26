@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import api from '@/lib/api'
 import DashboardHeader from '@/components/layout/DashboardHeader'
+import { useSession } from '@/hooks/useSession'
 
 interface Property {
   id: string
@@ -49,6 +48,7 @@ export default function PropertiesPage() {
     status: 'vacant',
     dueDate: '',
   })
+  const { loading: sessionLoading, authenticated } = useSession()
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate()
 
@@ -78,12 +78,16 @@ export default function PropertiesPage() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
-      if (!u) {
-        router.push('/login')
-        return
-      }
+    if (sessionLoading) {
+      return
+    }
 
+    if (!authenticated) {
+      router.push('/login')
+      return
+    }
+
+    async function loadProperties() {
       try {
         const data = await api.dashboard.getProperties()
         setProperties(data)
@@ -93,9 +97,10 @@ export default function PropertiesPage() {
       } finally {
         setLoading(false)
       }
-    })
-    return unsub
-  }, [router])
+    }
+
+    loadProperties()
+  }, [authenticated, router, sessionLoading])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -227,7 +232,7 @@ export default function PropertiesPage() {
     }
   }
 
-  if (loading) return <div className="loading">Loading properties...</div>
+  if (loading || sessionLoading) return <div className="loading">Loading properties...</div>
   if (error) return <div className="error">Error: {error}</div>
 
   return (

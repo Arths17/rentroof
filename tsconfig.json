@@ -14,6 +14,12 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "types": [
+      "node",
+      "vitest/globals",
+      "@playwright/test",
+      "@testing-library/jest-dom"
+    ],
     "jsx": "preserve",
     "incremental": true,
     "plugins": [

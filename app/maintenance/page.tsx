@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import api from '@/lib/api'
 import DashboardHeader from '@/components/layout/DashboardHeader'
+import { useSession } from '@/hooks/useSession'
 
 interface MaintenanceRequest {
   id: string
@@ -20,22 +19,36 @@ interface MaintenanceRequest {
   assignedTo?: string
 }
 
+type MaintenanceStatus = MaintenanceRequest['status']
+
+const MAINTENANCE_FILTERS: (MaintenanceStatus | 'all')[] = [
+  'open',
+  'in-progress',
+  'completed',
+  'all',
+]
+
 export default function MaintenancePage() {
   const router = useRouter()
   const pathname = usePathname()
   const [requests, setRequests] = useState<MaintenanceRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState('open')
+  const [filter, setFilter] = useState<MaintenanceStatus | 'all'>('open')
   const [updating, setUpdating] = useState<string | null>(null)
+  const { loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
-      if (!u) {
-        router.push('/login')
-        return
-      }
+    if (sessionLoading) {
+      return
+    }
 
+    if (!authenticated) {
+      router.push('/login')
+      return
+    }
+
+    async function loadMaintenance() {
       try {
         const data = await api.dashboard.getMaintenance()
         setRequests(data)
@@ -45,23 +58,34 @@ export default function MaintenancePage() {
       } finally {
         setLoading(false)
       }
-    })
-    return unsub
-  }, [router])
+    }
+
+    loadMaintenance()
+  }, [authenticated, router, sessionLoading])
 
   const getPriorityClass = (priority: string) => `priority-${priority}`
   const getStatusClass = (status: string) => `status-${status}`
 
-  const handleStatusUpdate = async (requestId: string, newStatus: string) => {
+  const handleStatusUpdate = async (
+    requestId: string,
+    newStatus: MaintenanceStatus,
+  ) => {
     try {
       setUpdating(requestId)
       const result = await api.dashboard.updateMaintenanceStatus(requestId, newStatus)
       
       if (result.success) {
         // Update local state
-        setRequests(requests.map(r => 
-          r.id === requestId 
-            ? { ...r, status: newStatus, completedDate: newStatus === 'completed' ? new Date().toISOString() : r.completedDate }
+        setRequests(requests.map(r =>
+          r.id === requestId
+            ? {
+                ...r,
+                status: newStatus,
+                completedDate:
+                  newStatus === 'completed'
+                    ? new Date().toISOString()
+                    : r.completedDate,
+              }
             : r
         ))
       }
@@ -77,7 +101,7 @@ export default function MaintenancePage() {
     ? requests 
     : requests.filter(r => r.status === filter)
 
-  if (loading) return <div className="loading">Loading maintenance requests...</div>
+  if (loading || sessionLoading) return <div className="loading">Loading maintenance requests...</div>
   if (error) return <div className="error">Error: {error}</div>
 
   return (
@@ -114,7 +138,7 @@ export default function MaintenancePage() {
       <div className="page-header">
         <h1>Maintenance Requests</h1>
         <div className="filter-buttons">
-          {['open', 'in-progress', 'completed', 'all'].map((status) => (
+          {MAINTENANCE_FILTERS.map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}

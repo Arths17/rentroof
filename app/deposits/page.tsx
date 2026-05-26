@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import api from '@/lib/api'
 import DashboardHeader from '@/components/layout/DashboardHeader'
+import { useSession } from '@/hooks/useSession'
 
 interface Deposit {
   id: string
@@ -44,14 +43,19 @@ export default function DepositsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { loading: sessionLoading, authenticated } = useSession()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async u => {
-      if (!u) {
-        router.push('/login')
-        return
-      }
+    if (sessionLoading) {
+      return
+    }
 
+    if (!authenticated) {
+      router.push('/login')
+      return
+    }
+
+    async function loadDeposits() {
       try {
         const [depositsData, paymentsData] = await Promise.all([
           api.dashboard.getDeposits(),
@@ -65,16 +69,17 @@ export default function DepositsPage() {
       } finally {
         setLoading(false)
       }
-    })
-    return unsub
-  }, [router])
+    }
+
+    loadDeposits()
+  }, [authenticated, router, sessionLoading])
 
   const getStatusClass = (status: string) => `status-${status}`
   const getTotalHeld = () => deposits
     .filter(d => d.status === 'held')
     .reduce((sum, d) => sum + d.amount, 0)
 
-  if (loading) return <div className="loading">Loading deposits...</div>
+  if (loading || sessionLoading) return <div className="loading">Loading deposits...</div>
   if (error) return <div className="error">Error: {error}</div>
 
   return (

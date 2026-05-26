@@ -1,25 +1,48 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { dbGet } from '@/app/api/_lib/db'
+import { getSessionToken, verifySessionToken } from '@/app/api/_lib/session'
+
+type DbUser = {
+  id: string
+  email: string
+  name: string | null
+  role: string
+  plan: string | null
+  photo_url: string | null
+}
 
 export async function GET(request: NextRequest) {
-  // Check if user is authenticated
-  // This is a placeholder - integrate with your auth provider (Firebase, etc.)
-  const token = request.cookies.get('auth_token')?.value
+  const sessionUser = verifySessionToken(getSessionToken(request))
 
-  if (!token) {
+  if (!sessionUser) {
     return NextResponse.json(
-      { authenticated: false, message: 'No auth token found' },
+      { authenticated: false, message: 'Invalid or expired session' },
       { status: 401 }
     )
   }
 
-  // Verify token (integrate with Firebase or your auth service)
+  const dbUser = dbGet<DbUser>(
+    'SELECT id, email, name, role, plan, photo_url FROM users WHERE email = ?',
+    [sessionUser.email]
+  )
+
+  if (!dbUser) {
+    return NextResponse.json(
+      { authenticated: false, message: 'Account not found' },
+      { status: 401 }
+    )
+  }
+
   return NextResponse.json({
     authenticated: true,
     user: {
-      id: 'user123',
-      email: 'user@example.com',
-      role: 'landlord',
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name ?? undefined,
+      role: dbUser.role,
+      plan: dbUser.plan ?? undefined,
+      photoURL: dbUser.photo_url ?? undefined,
     },
   })
 }

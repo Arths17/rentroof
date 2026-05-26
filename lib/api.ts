@@ -1,103 +1,107 @@
-// API utility functions for making requests to FastAPI backend
-// This file centralizes all API calls for the frontend
+// API utility functions for making requests to the Next.js API routes or a
+// configured backend. All requests include credentials so session cookies flow
+// correctly across same-origin and proxied deployments.
 
-// Use environment variable or default to FastAPI backend on port 8000
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+type ApiErrorPayload = {
+  error?: string
+  detail?: string
+  message?: string
+}
+
+export type AuthCheckResponse = {
+  authenticated: boolean
+  message?: string
+  user?: {
+    id: string
+    email: string
+    role: string
+    name?: string
+    plan?: string
+    photoURL?: string
+  }
+}
+
+type RequestInitWithJson = Omit<RequestInit, 'body'> & {
+  body?: BodyInit | Record<string, unknown> | null
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api'
+
+async function requestJson<T = any>(path: string, init: RequestInitWithJson = {}): Promise<T> {
+  const headers = new Headers(init.headers)
+  const body = init.body
+  const isJsonBody = body !== null && body !== undefined && !(body instanceof FormData)
+
+  if (isJsonBody && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers,
+    credentials: 'include',
+    body: isJsonBody ? JSON.stringify(body) : (body as BodyInit | null | undefined),
+  })
+
+  const data = (await response.json().catch(() => null)) as T & ApiErrorPayload | null
+
+  if (!response.ok) {
+    const message = data?.error || data?.detail || data?.message || `Request failed (${response.status})`
+    throw new Error(message)
+  }
+
+  return data as T
+}
 
 export const api = {
   // ==================== CONTENT ENDPOINTS ====================
   content: {
-    getFeatures: async () => {
-      const res = await fetch(`${API_BASE}/content/features`)
-      if (!res.ok) throw new Error('Failed to fetch features')
-      return res.json()
-    },
-
-    getPricing: async () => {
-      const res = await fetch(`${API_BASE}/content/pricing`)
-      if (!res.ok) throw new Error('Failed to fetch pricing')
-      return res.json()
-    },
-
-    getTestimonials: async () => {
-      const res = await fetch(`${API_BASE}/content/testimonials`)
-      if (!res.ok) throw new Error('Failed to fetch testimonials')
-      return res.json()
-    },
-
-    getStats: async () => {
-      const res = await fetch(`${API_BASE}/content/stats`)
-      if (!res.ok) throw new Error('Failed to fetch stats')
-      return res.json()
-    },
+    getFeatures: async () => requestJson('/content/features'),
+    getPricing: async () => requestJson('/content/pricing'),
+    getTestimonials: async () => requestJson('/content/testimonials'),
+    getStats: async () => requestJson('/content/stats'),
   },
 
   // ==================== AUTH ENDPOINTS ====================
   auth: {
-    checkAuth: async () => {
-      const res = await fetch(`${API_BASE}/auth/check`)
-      return res.json()
-    },
-
-    login: async (email: string, password: string) => {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+    checkAuth: async (): Promise<AuthCheckResponse> =>
+      requestJson<AuthCheckResponse>('/auth/check'),
+    login: async (email: string, password: string) =>
+      requestJson('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      if (!res.ok) throw new Error('Login failed')
-      return res.json()
-    },
-
+        body: { email, password },
+      }),
     signup: async (
       email: string,
       password: string,
       name: string,
       plan: string = 'growth'
-    ) => {
-      const res = await fetch(`${API_BASE}/auth/signup`, {
+    ) =>
+      requestJson('/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, plan }),
-      })
-      if (!res.ok) throw new Error('Signup failed')
-      return res.json()
-    },
-
-    delete: async (email: string) => {
-      const res = await fetch(`${API_BASE}/auth/delete`, {
+        body: { email, password, name, plan },
+      }),
+    logout: async () => requestJson('/auth/logout', { method: 'POST' }),
+    delete: async (email: string) =>
+      requestJson('/auth/delete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      if (!res.ok) throw new Error('Delete failed')
-      return res.json()
-    },
+        body: { email },
+      }),
   },
 
   // ==================== DASHBOARD ENDPOINTS ====================
   dashboard: {
-    getProperties: async () => {
-      const res = await fetch(`${API_BASE}/dashboard/properties`)
-      if (!res.ok) throw new Error('Failed to fetch properties')
-      return res.json()
-    },
-
+    getProperties: async () => requestJson('/dashboard/properties'),
     createProperty: async (
       address: string,
       city: string,
       state: string,
       zipCode: string
-    ) => {
-      const res = await fetch(`${API_BASE}/dashboard/properties`, {
+    ) =>
+      requestJson('/dashboard/properties', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, city, state, zipCode }),
-      })
-      if (!res.ok) throw new Error('Failed to create property')
-      return res.json()
-    },
-
+        body: { address, city, state, zipCode },
+      }),
     createUnit: async (
       propertyId: string,
       name: string,
@@ -106,39 +110,29 @@ export const api = {
       rentAmount: number,
       status: string = 'vacant',
       dueDate: string = ''
-    ) => {
-      const res = await fetch(`${API_BASE}/dashboard/properties/${propertyId}/units`, {
+    ) =>
+      requestJson(`/dashboard/properties/${propertyId}/units`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name,
           tenant,
           email,
           rentAmount,
           status,
           dueDate: dueDate || null,
-        }),
-      })
-      if (!res.ok) throw new Error('Failed to create unit')
-      return res.json()
-    },
-
+        },
+      }),
     updateProperty: async (
       propertyId: string,
       address: string,
       city: string,
       state: string,
       zipCode: string
-    ) => {
-      const res = await fetch(`${API_BASE}/dashboard/properties/${propertyId}`, {
+    ) =>
+      requestJson(`/dashboard/properties/${propertyId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, city, state, zipCode }),
-      })
-      if (!res.ok) throw new Error('Failed to update property')
-      return res.json()
-    },
-
+        body: { address, city, state, zipCode },
+      }),
     updateUnit: async (
       propertyId: string,
       unitId: string,
@@ -148,121 +142,64 @@ export const api = {
       rentAmount: number,
       status: string = 'vacant',
       dueDate: string = ''
-    ) => {
-      const res = await fetch(
-        `${API_BASE}/dashboard/properties/${propertyId}/units/${unitId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            tenant,
-            email,
-            rentAmount,
-            status,
-            dueDate: dueDate || null,
-          }),
-        }
-      )
-      if (!res.ok) throw new Error('Failed to update unit')
-      return res.json()
-    },
-
-    getRentStatus: async () => {
-      const res = await fetch(`${API_BASE}/dashboard/rent-status`)
-      if (!res.ok) throw new Error('Failed to fetch rent status')
-      return res.json()
-    },
-
-    getMaintenance: async () => {
-      const res = await fetch(`${API_BASE}/dashboard/maintenance`)
-      if (!res.ok) throw new Error('Failed to fetch maintenance requests')
-      return res.json()
-    },
-
+    ) =>
+      requestJson(`/dashboard/properties/${propertyId}/units/${unitId}`, {
+        method: 'PUT',
+        body: {
+          name,
+          tenant,
+          email,
+          rentAmount,
+          status,
+          dueDate: dueDate || null,
+        },
+      }),
+    getRentStatus: async () => requestJson('/dashboard/rent-status'),
+    getMaintenance: async () => requestJson('/dashboard/maintenance'),
     createMaintenance: async (
       unitId: string,
       title: string,
       description: string,
       priority: string = 'medium',
       images: string[] = []
-    ) => {
-      const res = await fetch(`${API_BASE}/dashboard/maintenance`, {
+    ) =>
+      requestJson('/dashboard/maintenance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unitId, title, description, priority, images }),
-      })
-      if (!res.ok) throw new Error('Failed to create maintenance request')
-      return res.json()
-    },
-
-    updateMaintenanceStatus: async (requestId: string, status: string) => {
-      const res = await fetch(`${API_BASE}/dashboard/maintenance/${requestId}`, {
+        body: { unitId, title, description, priority, images },
+      }),
+    updateMaintenanceStatus: async (requestId: string, status: string) =>
+      requestJson(`/dashboard/maintenance/${requestId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
-      if (!res.ok) throw new Error('Failed to update maintenance status')
-      return res.json()
-    },
-
-    getPayments: async () => {
-      const res = await fetch(`${API_BASE}/dashboard/payments`)
-      if (!res.ok) throw new Error('Failed to fetch payments')
-      return res.json()
-    },
-
-    getDeposits: async () => {
-      const res = await fetch(`${API_BASE}/dashboard/deposits`)
-      if (!res.ok) throw new Error('Failed to fetch deposits')
-      return res.json()
-    },
-
+        body: { status },
+      }),
+    getPayments: async () => requestJson('/dashboard/payments'),
+    getDeposits: async () => requestJson('/dashboard/deposits'),
     createDeposit: async (
       unitId: string,
       tenantId: string,
       amount: number,
       dateReceived: string
-    ) => {
-      const res = await fetch(`${API_BASE}/dashboard/deposits`, {
+    ) =>
+      requestJson('/dashboard/deposits', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unitId, tenantId, amount, dateReceived }),
-      })
-      if (!res.ok) throw new Error('Failed to create deposit')
-      return res.json()
-    },
+        body: { unitId, tenantId, amount, dateReceived },
+      }),
   },
 
   // ==================== TENANT ENDPOINTS ====================
   tenant: {
-    getPortal: async () => {
-      const res = await fetch(`${API_BASE}/tenant/portal`)
-      if (!res.ok) throw new Error('Failed to fetch tenant portal')
-      return res.json()
-    },
-
-    getMaintenance: async () => {
-      const res = await fetch(`${API_BASE}/tenant/maintenance`)
-      if (!res.ok) throw new Error('Failed to fetch maintenance requests')
-      return res.json()
-    },
-
+    getPortal: async () => requestJson('/tenant/portal'),
+    getMaintenance: async () => requestJson('/tenant/maintenance'),
     payRent: async (
       tenantId: string,
       unitId: string,
       amount: number,
       paymentMethod: string
-    ) => {
-      const res = await fetch(`${API_BASE}/tenant/pay-rent`, {
+    ) =>
+      requestJson('/tenant/pay-rent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, unitId, amount, paymentMethod }),
-      })
-      if (!res.ok) throw new Error('Payment failed')
-      return res.json()
-    },
-
+        body: { tenantId, unitId, amount, paymentMethod },
+      }),
     submitMaintenance: async (
       tenantId: string,
       unitId: string,
@@ -270,43 +207,22 @@ export const api = {
       description: string,
       priority: string = 'medium',
       images: string[] = []
-    ) => {
-      const res = await fetch(`${API_BASE}/tenant/maintenance`, {
+    ) =>
+      requestJson('/tenant/maintenance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          unitId,
-          title,
-          description,
-          priority,
-          images,
-        }),
-      })
-      if (!res.ok) throw new Error('Failed to submit maintenance request')
-      return res.json()
-    },
-
-    getMoveInWalkthrough: async () => {
-      const res = await fetch(`${API_BASE}/tenant/move-in-walkthrough`)
-      if (!res.ok) throw new Error('Failed to fetch move-in walkthrough')
-      return res.json()
-    },
-
+        body: { tenantId, unitId, title, description, priority, images },
+      }),
+    getMoveInWalkthrough: async () => requestJson('/tenant/move-in-walkthrough'),
     submitMoveInWalkthrough: async (
       tenantId: string,
       unitId: string,
       roomId: string,
       photos: string[]
-    ) => {
-      const res = await fetch(`${API_BASE}/tenant/move-in-walkthrough`, {
+    ) =>
+      requestJson('/tenant/move-in-walkthrough', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, unitId, roomId, photos }),
-      })
-      if (!res.ok) throw new Error('Failed to submit walkthrough photos')
-      return res.json()
-    },
+        body: { tenantId, unitId, roomId, photos },
+      }),
   },
 }
 

@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { attachSessionCookie, createSessionToken } from '@/app/api/_lib/session'
+import { dbGet, dbRun } from '@/app/api/_lib/db'
+import {
+  hashPassword,
+  normalizeEmail,
+  stableUserId,
+  verifyPassword,
+} from '@/app/api/_lib/security'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,28 +21,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Validate credentials with Firebase or your auth service
-    // This is a placeholder implementation
+    const normalizedEmail = normalizeEmail(email)
+    const user = dbGet<{
+      id: string
+      email: string
+      name: string | null
+      role: string
+      plan: string | null
+      photo_url: string | null
+      password_hash: string
+    }>(
+      'SELECT id, email, name, role, plan, photo_url, password_hash FROM users WHERE email = ?',
+      [normalizedEmail]
+    )
 
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: 'user123',
-        email: email,
-        role: 'landlord',
-      },
-      redirectUrl: '/dashboard',
-    })
+    if (!user || !verifyPassword(password, user.password_hash)) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
 
-    // Set auth cookie (adjust domain and security settings as needed)
-    response.cookies.set({
-      name: 'auth_token',
-      value: 'token_placeholder',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    })
+    dbRun(
+      'UPDATE users SET updated_at = datetime(\'now\') WHERE email = ?',
+      [normalizedEmail]
+    )
+
+    const response = attachSessionCookie(
+      NextResponse.json({
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? undefined,
+          role: user.role,
+          plan: user.plan ?? undefined,
+          photoURL: user.photo_url ?? undefined,
+        },
+        redirectUrl: '/dashboard',
+      }),
+      createSessionToken({
+        id: user.id,
+        email: user.email,
+        name: user.name ?? undefined,
+        role: user.role,
+        plan: user.plan ?? undefined,
+        photoURL: user.photo_url ?? undefined,
+      })
+    )
 
     return response
   } catch (error) {
