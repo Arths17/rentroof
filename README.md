@@ -2,6 +2,8 @@
 
 RentProof is a property operations platform for landlords and property managers.
 
+**AI was used for fixing errors relating to backend auth**
+
 It includes:
 - A Next.js 15 frontend for marketing pages, landlord dashboard, and tenant portal UX.
 - A FastAPI backend for content, auth, dashboard, and tenant APIs.
