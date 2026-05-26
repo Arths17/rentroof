@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    HTTPException,
-    Request,
-    Response,
-    status,
-)
+    from fastapi import (
+        APIRouter,
+        BackgroundTasks,
+        HTTPException,
+        Request,
+        Response,
+        status,
+    )
 
 from backend.models import AuthResponse, LoginRequest, SignupRequest, User
 from backend.send_email import send_welcome_email
