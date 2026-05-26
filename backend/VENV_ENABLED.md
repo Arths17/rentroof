@@ -2,7 +2,7 @@
 
 ## Status: READY
 
-Your Python virtual environment for the FastAPI backend is now fully set up and activated!
+Your Python virtual environment for the FastAPI backend is set up and ready.
 
 ```
 ✅ Virtual Environment Created: backend/venv/
@@ -20,7 +20,7 @@ Your Python virtual environment for the FastAPI backend is now fully set up and 
 
 ```bash
 # Navigate to backend
-cd /Users/lakshminarayanans/rentroof/backend
+cd /Users/atharvranjan/rentproof/backend
 
 # Activate virtual environment
 source venv/bin/activate
@@ -40,7 +40,7 @@ The backend will run on: **http://localhost:8000**
 ### In another terminal (for frontend):
 
 ```bash
-cd /Users/lakshminarayanans/rentroof
+cd /Users/atharvranjan/rentproof
 npm run dev
 ```
 
@@ -78,6 +78,7 @@ python -c "import fastapi; print('FastAPI is ready!')"
 backend/
 ├── venv/                   ✅ Virtual environment (NEW!)
 ├── main.py                 FastAPI app
+├── auth.py                 Auth endpoints
 ├── models.py               Pydantic models
 ├── requirements.txt        Dependencies
 ├── .env                    Configuration
@@ -86,9 +87,8 @@ backend/
 ├── ARCHITECTURE.md         System design
 └── routers/
     ├── content.py          4 endpoints
-    ├── auth.py             3 endpoints
-    ├── dashboard.py        7 endpoints
-    └── tenant.py           5 endpoints
+   ├── dashboard.py        12 endpoints
+   └── tenant.py           6 endpoints
 ```
 
 ## 🎯 Next Steps
@@ -131,4 +131,4 @@ deactivate
 
 Your FastAPI backend is ready for development with a fully isolated Python environment.
 
-**Happy coding!** 🚀
+Happy coding.
