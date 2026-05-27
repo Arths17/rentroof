@@ -7,6 +7,7 @@ import HowItWorks      from '@/components/landing/HowItWorks'
 import FeaturesGrid    from '@/components/landing/FeaturesGrid'
 import StatsBar        from '@/components/landing/StatsBar'
 import TenantSection   from '@/components/landing/TenantSection'
+import ChatbotSection  from '@/components/landing/ChatbotSection'
 import Pricing         from '@/components/landing/Pricing'
 import Testimonials    from '@/components/landing/Testimonials'
 import FinalCTA        from '@/components/landing/FinalCTA'
@@ -24,6 +25,7 @@ export default function Home() {
         <FeaturesGrid />
         <StatsBar />
         <TenantSection />
+        <ChatbotSection />
         <Pricing />
         <Testimonials />
         <FinalCTA />

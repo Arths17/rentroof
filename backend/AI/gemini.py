@@ -53,26 +53,24 @@ class Gemini:
     def __init__(self, api_key):
         self.client = genai.Client(api_key=api_key)
 
+    def generate_response(self, message: str) -> str:
+        chat = self.client.chats.create(
+            model="gemini-3.1-flash-lite",
+            config={"system_instruction": RENTPROOF_SYSTEM_INSTRUCTIONS},
+        )
+        result = chat.send_message(message)
+        return (result.text or "").strip()
+
     def gen_conv(self):
         while True:
             try:
-                query = input("You: ")
-                chat = self.client.chats.create(
-                model="gemini-3.1-flash-lite",
-                config={
-                    "system_instruction": RENTPROOF_SYSTEM_INSTRUCTIONS
-                    },
-                )
-                decide = self.client.models.generate_content(
-                    model="gemini-3.1-flash-lite",
-                    config={"system_instruction": RENTPROOF_SYSTEM_INSTRUCTIONS + "Provide only a yes or no answer, say yes or no whether the user wants to continue the conversation or not."},
-                    contents=query + " do you want to continue the conversation?",
-                )
-                decide = decide.text.strip().upper()
-                if decide == "YES" or decide == "NO":
+                query = input("You: ").strip()
+                if not query:
+                    continue
+                if query.lower() in {"bye", "exit", "quit"}:
+                    print("Goodbye!")
                     break
-                result = chat.send_message(query)
-                print(result.text)
+                print(self.generate_response(query))
             except Exception as e:
                 print(e)
                 print(
@@ -80,11 +78,21 @@ class Gemini:
                 )
                 break
 
+
+class GeminiService:
+    def __init__(self):
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not set. Add it to backend/.env")
+        self.gemini = Gemini(api_key)
+
+    def ask(self, message: str) -> str:
+        if not message or not message.strip():
+            raise ValueError("Message cannot be empty")
+        return self.gemini.generate_response(message)
+
         
 if __name__ == "__main__":
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set. Add it to backend/.env")
-    gemini = Gemini(api_key)
-    gemini.gen_conv()
+    service = GeminiService()
+    service.gemini.gen_conv()
 

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import {
   signInWithPopup,
 } from 'firebase/auth'
-import { auth, provider, FRIENDLY_ERRORS } from '@/lib/firebase'
+import { auth, provider, FRIENDLY_ERRORS, firebaseReady, firebaseInitError } from '@/lib/firebase'
 import api from '@/lib/api'
 import GoogleButton from '@/components/auth/GoogleButton'
 import { useSession } from '@/hooks/useSession'
@@ -30,6 +30,10 @@ export default function LoginPage() {
 
   async function handleGoogle() {
     clearError()
+    if (!firebaseReady || !auth || !provider) {
+      setError(firebaseInitError || 'Google sign-in is not available right now. Please check Firebase configuration.')
+      return
+    }
     setGoogleLoading(true)
     try {
       const result = await signInWithPopup(auth, provider)

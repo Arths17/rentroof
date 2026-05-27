@@ -16,6 +16,7 @@ import backend.auth as auth
 import backend.routers.content as content
 import backend.routers.dashboard as dashboard
 import backend.routers.tenant as tenant
+import backend.routers.chatbot as chatbot
 
 
 logging.basicConfig(level=logging.INFO)
@@ -47,6 +48,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
         "http://localhost:8000",
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
     ],
@@ -66,6 +69,7 @@ app.include_router(
     tags=["dashboard"],
 )
 app.include_router(tenant.router, prefix="/api/tenant", tags=["tenant"])
+app.include_router(chatbot.router, prefix="/api/chatbot", tags=["chatbot"])
 
 
 @app.get("/")

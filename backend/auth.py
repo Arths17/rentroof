@@ -4,16 +4,25 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
-    from fastapi import (
-        APIRouter,
-        BackgroundTasks,
-        HTTPException,
-        Request,
-        Response,
-        status,
-    )
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 
+from backend.db import execute, query_one
 from backend.models import AuthResponse, LoginRequest, SignupRequest, User
+from backend.security import (
+    attach_auth_cookie,
+    create_session_token,
+    get_authenticated_user,
+    hash_password,
+    stable_user_id,
+    verify_password,
+)
 from backend.send_email import send_welcome_email
 
 logger = logging.getLogger(__name__)
@@ -23,6 +32,20 @@ router = APIRouter()
 USERS_DB: dict[str, dict[str, Any]] = {}
 SESSIONS = {}
 SESSION_TTL_HOURS = 24 * 7
+
+
+def _normalize_email(value: str) -> str:
+    return value.strip().lower()
+
+
+def _build_user(row: dict[str, Any]) -> User:
+    return User(
+        id=row["id"],
+        email=row["email"],
+        name=row.get("name"),
+        role=row.get("role", "landlord"),
+        plan=row.get("plan"),
+    )
 
 
 def _create_session(user: User) -> str:
@@ -169,13 +192,6 @@ async def signup(
         message="Account created successfully",
         token=token,
     )
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Signup failed",
-        )
 
 
 @router.post("/delete")

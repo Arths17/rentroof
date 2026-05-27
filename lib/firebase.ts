@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import type { FirebaseApp } from 'firebase/app'
+import type { Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,15 +12,42 @@ const firebaseConfig = {
   appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+const requiredKeys: Array<keyof typeof firebaseConfig> = ['apiKey', 'authDomain', 'projectId', 'appId']
 
-export const auth     = getAuth(app)
-export const db       = getFirestore(app)
-export const provider = (() => {
-  const p = new GoogleAuthProvider()
-  p.setCustomParameters({ prompt: 'select_account' })
-  return p
+function hasFirebaseConfig(): boolean {
+  return requiredKeys.every((key) => {
+    const value = firebaseConfig[key]
+    return typeof value === 'string' && value.trim().length > 0
+  })
+}
+
+let app: FirebaseApp | null = null
+let authInstance: Auth | null = null
+let providerInstance: GoogleAuthProvider | null = null
+
+export let firebaseInitError = ''
+export const firebaseReady = (() => {
+  if (!hasFirebaseConfig()) {
+    firebaseInitError = 'Firebase client configuration is missing. Set NEXT_PUBLIC_FIREBASE_* variables.'
+    return false
+  }
+
+  try {
+    app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+    authInstance = getAuth(app)
+
+    const p = new GoogleAuthProvider()
+    p.setCustomParameters({ prompt: 'select_account' })
+    providerInstance = p
+    return true
+  } catch {
+    firebaseInitError = 'Firebase client configuration is invalid. Check NEXT_PUBLIC_FIREBASE_API_KEY and related values.'
+    return false
+  }
 })()
+
+export const auth = authInstance
+export const provider = providerInstance
 
 export const FRIENDLY_ERRORS: Record<string, string> = {
   'auth/user-not-found':         'No account found with that email.',

@@ -21,6 +21,11 @@ export type AuthCheckResponse = {
   }
 }
 
+export type ChatbotResponse = {
+  response: string
+  error?: string | null
+}
+
 type RequestInitWithJson = Omit<RequestInit, 'body'> & {
   body?: BodyInit | Record<string, unknown> | null
 }
@@ -223,6 +228,15 @@ export const api = {
         method: 'POST',
         body: { tenantId, unitId, roomId, photos },
       }),
+  },
+
+  chatbot: {
+    sendMessage: async (content: string): Promise<ChatbotResponse> =>
+      requestJson<ChatbotResponse>('/chatbot/message', {
+        method: 'POST',
+        body: { content },
+      }),
+    health: async () => requestJson('/chatbot/health'),
   },
 }
 

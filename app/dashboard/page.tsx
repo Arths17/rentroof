@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import api from '@/lib/api'
 import { useSession } from '@/hooks/useSession'
+import ChatBot from '@/components/ChatBot'
 
 type DashboardSummary = {
   units: number
@@ -214,7 +215,8 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="dash-main">
+      <main className="dash-main-wrapper">
+        <div className="dash-main-content">
         <div className="dash-nav-buttons dash-nav-buttons--dashboard">
           <button 
             className={`nav-btn${pathname === '/properties' ? ' active' : ''}`}
@@ -356,6 +358,13 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        </div>
+
+        <aside className="dash-sidebar">
+          <div className="dash-assistant-container">
+            <ChatBot />
+          </div>
+        </aside>
       </main>
     </div>
   )
