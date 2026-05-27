@@ -108,6 +108,144 @@ class FirebaseClient:
             logger.error(f"Error deleting unit from Firestore: {str(e)}")
             return False
 
+    def get_user_properties(self, user_id: str) -> list[Dict[str, Any]]:
+        """Fetch all properties for a user from Firestore"""
+        try:
+            # Query properties where userId matches
+            query_url = f"{self.firestore_url}:runQuery"
+            query_body = {
+                "structuredQuery": {
+                    "from": [{"collectionId": "properties"}],
+                    "where": {
+                        "fieldFilter": {
+                            "field": {"fieldPath": "userId"},
+                            "op": "EQUAL",
+                            "value": {"stringValue": user_id}
+                        }
+                    }
+                }
+            }
+            params = {"key": self.api_key}
+            response = requests.post(query_url, json=query_body, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                results = response.json()
+                properties = []
+                for item in results:
+                    if "document" in item:
+                        doc = item["document"]
+                        prop_data = self._convert_firestore_doc(doc)
+                        properties.append(prop_data)
+                return properties
+            else:
+                logger.error(f"Failed to fetch properties: {response.status_code}")
+                return []
+        except Exception as e:
+            logger.error(f"Error fetching properties: {str(e)}")
+            return []
+
+    def get_user_units(self, user_id: str) -> list[Dict[str, Any]]:
+        """Fetch all units for a user's properties from Firestore"""
+        try:
+            units = []
+            properties = self.get_user_properties(user_id)
+            
+            for prop in properties:
+                prop_id = prop.get("id", "")
+                # Query units where propertyId matches
+                query_url = f"{self.firestore_url}:runQuery"
+                query_body = {
+                    "structuredQuery": {
+                        "from": [{"collectionId": "units"}],
+                        "where": {
+                            "fieldFilter": {
+                                "field": {"fieldPath": "propertyId"},
+                                "op": "EQUAL",
+                                "value": {"stringValue": prop_id}
+                            }
+                        }
+                    }
+                }
+                params = {"key": self.api_key}
+                response = requests.post(query_url, json=query_body, params=params, timeout=10)
+                
+                if response.status_code == 200:
+                    results = response.json()
+                    for item in results:
+                        if "document" in item:
+                            doc = item["document"]
+                            unit_data = self._convert_firestore_doc(doc)
+                            units.append(unit_data)
+            
+            return units
+        except Exception as e:
+            logger.error(f"Error fetching units: {str(e)}")
+            return []
+
+    def get_maintenance_requests(self, user_id: str) -> list[Dict[str, Any]]:
+        """Fetch maintenance requests for a user's properties"""
+        try:
+            requests_list = []
+            properties = self.get_user_properties(user_id)
+            
+            for prop in properties:
+                prop_id = prop.get("id", "")
+                # Query maintenance where propertyId matches
+                query_url = f"{self.firestore_url}:runQuery"
+                query_body = {
+                    "structuredQuery": {
+                        "from": [{"collectionId": "maintenance"}],
+                        "where": {
+                            "fieldFilter": {
+                                "field": {"fieldPath": "propertyId"},
+                                "op": "EQUAL",
+                                "value": {"stringValue": prop_id}
+                            }
+                        }
+                    }
+                }
+                params = {"key": self.api_key}
+                response = requests.post(query_url, json=query_body, params=params, timeout=10)
+                
+                if response.status_code == 200:
+                    results = response.json()
+                    for item in results:
+                        if "document" in item:
+                            doc = item["document"]
+                            maint_data = self._convert_firestore_doc(doc)
+                            requests_list.append(maint_data)
+            
+            return requests_list
+        except Exception as e:
+            logger.error(f"Error fetching maintenance requests: {str(e)}")
+            return []
+
+    @staticmethod
+    def _convert_firestore_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert Firestore document to Python dict"""
+        fields = doc.get("fields", {})
+        result = {}
+        
+        for key, value in fields.items():
+            if "stringValue" in value:
+                result[key] = value["stringValue"]
+            elif "doubleValue" in value:
+                result[key] = value["doubleValue"]
+            elif "integerValue" in value:
+                result[key] = int(value["integerValue"])
+            elif "booleanValue" in value:
+                result[key] = value["booleanValue"]
+            elif "timestampValue" in value:
+                result[key] = value["timestampValue"]
+            elif "nullValue" in value:
+                result[key] = None
+            elif "arrayValue" in value:
+                result[key] = value["arrayValue"].get("values", [])
+            elif "mapValue" in value:
+                result[key] = value["mapValue"].get("fields", {})
+        
+        return result
+
     @staticmethod
     def _get_timestamp() -> str:
         """Get current timestamp in RFC 3339 format"""

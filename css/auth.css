@@ -475,10 +475,13 @@
 /* Dashboard main */
 .dash-main-wrapper {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   flex: 1;
   padding: 2.5rem 2rem;
   width: 100%;
+  justify-content: center;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .dash-main-content {
@@ -488,24 +491,25 @@
 }
 
 .dash-sidebar {
-  width: 300px;
+  width: 420px;
   flex-shrink: 0;
   position: sticky;
   top: 5rem;
   height: fit-content;
   max-height: calc(100vh - 10rem);
+  margin-left: 7rem;
 }
 
 .dash-assistant-container {
   background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border: none;
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 12rem);
-  max-height: 650px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  height: calc(100vh - 10rem);
+  max-height: 700px;
+  box-shadow: 0 12px 40px rgba(2,6,23,0.06);
 }
 
 .dash-main {

@@ -76,43 +76,67 @@ export default function ChatBot() {
 
   return (
     <div className="flex flex-col h-full" style={{
-      backgroundColor: 'var(--card-bg)',
+      backgroundColor: 'var(--bg)',
       color: 'var(--paper)',
+      borderRadius: '12px',
+      border: 'none',
+      boxShadow: '0 10px 30px rgba(2,6,23,0.06)',
+      overflow: 'hidden',
     }}>
       {/* Header */}
-      <div className="px-4 py-4 border-b" style={{
-        borderColor: 'var(--border)',
-        backgroundColor: 'var(--card-bg)',
+      <div className="px-4 py-3 border-b" style={{
+        borderColor: 'transparent',
+        backgroundColor: 'transparent',
       }}>
-        <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--paper)', marginBottom: '0.5rem' }}>
-          💬 Assistant
+        <div style={{ 
+          fontSize: '0.95rem', 
+          fontWeight: '700', 
+          color: 'var(--paper)',
+          letterSpacing: '-0.01em',
+        }}>
+          Assistant
         </div>
-        <div style={{ fontSize: '0.7rem', color: 'var(--mid)', lineHeight: '1.4' }}>
-          Ask anything about managing your properties
+        <div style={{ 
+          fontSize: '0.7rem', 
+          color: 'var(--mid)', 
+          marginTop: '0.3rem',
+          letterSpacing: '0.02em',
+        }}>
+          Powered by Gemini AI
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex-1 overflow-y-auto" style={{ 
+        backgroundColor: 'var(--bg)',
+        padding: '1rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        minHeight: 0,
+        overflowY: 'auto',
+      }}>
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[75%] px-4 py-3 rounded-lg text-sm leading-relaxed ${
-                message.sender === 'user'
-                  ? 'rounded-br-none'
-                  : 'rounded-bl-none'
-              }`}
               style={{
-                backgroundColor: message.sender === 'user' ? 'var(--accent)' : 'var(--bg-raised)',
+                maxWidth: '80%',
+                padding: '0.65rem 0.95rem',
+                borderRadius: '14px',
+                fontSize: '0.88rem',
+                lineHeight: '1.45',
+                wordBreak: 'break-word',
+                backgroundColor: message.sender === 'user' ? 'var(--accent)' : 'var(--card-bg)',
                 color: message.sender === 'user' ? '#fff' : 'var(--paper)',
-                borderColor: 'var(--border)',
-                ...(message.sender !== 'user' && { border: '1px solid var(--border)' }),
+                border: message.sender === 'user' ? 'none' : `1px solid rgba(255,255,255,0.03)` ,
+                boxShadow: message.sender === 'user' ? '0 4px 14px rgba(99,102,241,0.12)' : 'none',
+                backdropFilter: message.sender === 'assistant' ? 'saturate(120%) blur(2px)' : undefined,
               }}
             >
-              <p className="whitespace-pre-wrap break-words m-0" style={{ fontSize: '0.825rem', lineHeight: '1.5' }}>
+              <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
                 {message.content}
               </p>
             </div>
@@ -121,28 +145,35 @@ export default function ChatBot() {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="px-4 py-3 rounded-lg rounded-bl-none" style={{
-              backgroundColor: 'var(--bg-raised)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}>
-              <div className="flex space-x-2">
-                <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)' }}></div>
-                <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)', animationDelay: '0.1s' }}></div>
-                <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)', animationDelay: '0.2s' }}></div>
-              </div>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                backgroundColor: 'var(--card-bg)',
+                border: '1px solid var(--border)',
+                display: 'flex',
+                gap: '0.5rem',
+              }}
+            >
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)' }}></div>
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)', animationDelay: '0.1s' }}></div>
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--mid)', animationDelay: '0.2s' }}></div>
             </div>
           </div>
         )}
 
         {error && (
           <div className="flex justify-center">
-            <div className="px-4 py-3 rounded-lg text-xs max-w-[85%] text-center" style={{
-              backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              maxWidth: '90%',
+              textAlign: 'center',
+              backgroundColor: 'rgba(220, 38, 38, 0.08)',
               color: '#dc2626',
               border: '1px solid rgba(220, 38, 38, 0.2)',
-              fontSize: '0.775rem',
-              lineHeight: '1.4',
+              fontSize: '0.75rem',
+              fontWeight: '500',
             }}>
               ⚠️ {error}
             </div>
@@ -153,48 +184,52 @@ export default function ChatBot() {
       </div>
 
       {/* Input Form */}
-      <div className="border-t p-4" style={{
-        borderColor: 'var(--border)',
-        backgroundColor: 'var(--card-bg)',
+      <div className="border-t p-3" style={{
+        borderColor: 'transparent',
+        backgroundColor: 'transparent',
+        flexShrink: 0,
+        marginTop: 'auto',
+        padding: '1rem',
       }}>
-        <form onSubmit={handleSendMessage} className="flex gap-2.5">
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask..."
+            placeholder="Type a message..."
             disabled={isLoading}
-            className="flex-1 px-3.5 py-2.5 border rounded focus:outline-none focus:ring-1 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 rounded-full focus:outline-none transition-all disabled:cursor-not-allowed"
             style={{
-              borderColor: 'var(--border)',
-              backgroundColor: 'var(--bg)',
+              padding: '0.6rem 1rem',
+              borderColor: 'transparent',
+              backgroundColor: 'rgba(255,255,255,0.02)',
               color: 'var(--paper)',
-              fontSize: '0.85rem',
+              fontSize: '0.9rem',
+              border: '1px solid rgba(255,255,255,0.03)',
               boxSizing: 'border-box',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent)';
-              e.currentTarget.style.boxShadow = '0 0 0 1px var(--accent)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border)';
-              e.currentTarget.style.boxShadow = 'none';
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
             }}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-4 py-2.5 text-white rounded font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 hover:opacity-90"
+            className="rounded-full transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: 'var(--accent)',
-              fontSize: '0.85rem',
+              width: '44px',
+              height: '44px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isLoading || !input.trim() ? 'rgba(255,255,255,0.03)' : 'var(--accent)',
+              color: '#fff',
+              fontSize: '0.9rem',
               border: 'none',
               cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-              minWidth: '40px',
-              textAlign: 'center',
             }}
           >
-            →
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor" />
+            </svg>
           </button>
         </form>
       </div>
