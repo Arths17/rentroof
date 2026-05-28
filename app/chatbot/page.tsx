@@ -7,33 +7,21 @@ export const metadata = {
 
 export default function ChatBotPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-[rgba(10,10,15,1)] to-[rgba(13,15,19,1)] px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto w-full max-w-4xl flex-1">
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl font-bold tracking-[-0.04em] text-[color:var(--paper)] md:text-6xl">
             RentProof Assistant
           </h1>
-          <p className="text-lg text-gray-600">
-            Ask any questions about managing your properties with RentProof
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-6 text-[color:rgba(240,237,230,0.72)]">
+            Ask anything about property management, pricing, maintenance, or tenant communication.
           </p>
         </div>
 
-        <div className="h-[600px]">
+        <div className="h-[75vh] min-h-[680px] rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg)' }}>
           <ChatBot />
         </div>
-
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h3 className="font-bold text-gray-900 mb-2">Things you can ask:</h3>
-          <ul className="text-gray-700 space-y-1 text-sm">
-            <li>• What is RentProof?</li>
-            <li>• How do I track rent payments?</li>
-            <li>• What features are included in each pricing plan?</li>
-            <li>• How does the deposit tracking work?</li>
-            <li>• Tell me about maintenance request management</li>
-            <li>• How do I use the tenant portal?</li>
-          </ul>
-        </div>
       </div>
-    </div>
+    </main>
   );
 }

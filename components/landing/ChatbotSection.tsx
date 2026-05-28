@@ -33,51 +33,82 @@ export default function ChatbotSection() {
   }
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-blue-50 to-white">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Questions? Ask RentProof Assistant
+    <section className="py-16 px-4 md:py-24" style={{ background: 'linear-gradient(180deg, rgba(10,10,15,1), rgba(13,15,19,1))' }}>
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-12 text-center">
+          <h2 className="text-4xl font-bold tracking-[-0.04em] text-[color:var(--paper)] md:text-5xl">
+            Questions? Ask instantly.
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Get instant answers about features, pricing, and how RentProof can help you manage properties
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-6 text-[color:rgba(240,237,230,0.72)]">
+            Get real-time answers about features, pricing, and how RentProof simplifies property management.
           </p>
         </div>
 
-        {/* Chat Container */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
-          {/* Demo Chat */}
-          <div className="h-64 md:h-80 overflow-y-auto p-6 bg-gray-50 space-y-4">
+        <div className="mx-auto max-w-2xl rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg)' }}>
+          {/* Header */}
+          <div className="border-b px-4 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <p className="text-sm font-medium text-[color:var(--paper)]">Chat</p>
+          </div>
+
+          {/* Messages */}
+          <div className="flex h-80 flex-col gap-3 overflow-y-auto px-4 py-4 space-y-3">
             <div className="flex justify-start">
-              <div className="bg-blue-100 text-gray-900 px-4 py-2 rounded-lg rounded-tl-none max-w-xs">
-                <p className="text-sm">Hi! I&apos;m the RentProof Assistant. Ask me anything about managing properties, tracking rent, or our pricing plans.</p>
+              <div
+                className="max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  color: '#fff',
+                }}
+              >
+                Hi! I can help you with any questions about RentProof. Ask me about features, pricing, or property management.
               </div>
             </div>
 
             {response && (
               <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg rounded-tl-none max-w-sm">
-                  <p className="text-sm whitespace-pre-wrap">{response}</p>
+                <div
+                  className="max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    color: '#fff',
+                  }}
+                >
+                  {response}
                 </div>
               </div>
             )}
 
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-900 px-4 py-3 rounded-lg rounded-tl-none">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
+                <div
+                  className="flex gap-1 rounded-2xl px-3 py-2"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                >
+                  <div
+                    className="h-1 w-1 animate-bounce rounded-full"
+                    style={{ backgroundColor: 'var(--mid)' }}
+                  />
+                  <div
+                    className="h-1 w-1 animate-bounce rounded-full"
+                    style={{ backgroundColor: 'var(--mid)', animationDelay: '0.1s' }}
+                  />
+                  <div
+                    className="h-1 w-1 animate-bounce rounded-full"
+                    style={{ backgroundColor: 'var(--mid)', animationDelay: '0.2s' }}
+                  />
                 </div>
               </div>
             )}
 
             {error && (
               <div className="flex justify-center">
-                <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm max-w-xs">
+                <div
+                  className="max-w-[75%] rounded-2xl px-3 py-2 text-center text-xs"
+                  style={{
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    color: '#fca5a5',
+                  }}
+                >
                   {error}
                 </div>
               </div>
@@ -85,59 +116,48 @@ export default function ChatbotSection() {
           </div>
 
           {/* Input */}
-          <div className="p-6 bg-white border-t border-gray-200">
-            <form onSubmit={handleAsk} className="flex gap-3">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Try: What is RentProof?"
-                disabled={loading}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900"
-              />
+          <div className="border-t px-3 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <form onSubmit={handleAsk} className="flex items-end gap-2">
+              <div
+                className="flex flex-1 items-center rounded-xl border px-3"
+                style={{ borderColor: 'rgba(255,255,255,0.12)' }}
+              >
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Message..."
+                  disabled={loading}
+                  className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-[rgba(255,255,255,0.4)] disabled:cursor-not-allowed"
+                  style={{ color: 'var(--paper)' }}
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={loading || !message.trim()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-opacity disabled:opacity-40"
+                style={{
+                  backgroundColor: loading || !message.trim() ? 'rgba(232,79,43,0.3)' : 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                }}
               >
-                Ask
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor" />
+                </svg>
               </button>
             </form>
           </div>
         </div>
 
-        {/* Suggested Questions */}
-        <div className="mt-8 text-center">
-          <p className="text-gray-600 mb-4">Try asking:</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {['What features does RentProof have?', 'How much does it cost?', 'Do you support move-in walkthroughs?'].map(
-              (q) => (
-                <button
-                  key={q}
-                  onClick={() => {
-                    setMessage(q)
-                    setTimeout(() => {
-                      const form = document.querySelector('form')
-                      if (form) form.dispatchEvent(new Event('submit', { bubbles: true }))
-                    }, 0)
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-blue-600 hover:text-blue-600 transition-colors"
-                >
-                  {q}
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* CTA */}
         <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Want to explore more?</p>
           <Link
             href="/chatbot"
-            className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(232,79,43,0.2)] transition-transform hover:scale-105"
           >
-            Open Full Chat →
+            Open full chat
+            <span aria-hidden>→</span>
           </Link>
         </div>
       </div>

@@ -501,15 +501,15 @@
 }
 
 .dash-assistant-container {
-  background: var(--card-bg);
-  border: none;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 10rem);
-  max-height: 700px;
-  box-shadow: 0 12px 40px rgba(2,6,23,0.06);
+  height: calc(100vh - 12rem);
+  max-height: 720px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 .dash-main {
@@ -830,8 +830,6 @@
   flex-shrink: 0;
   font-weight: 600;
 }
-
-.setup-step-body {}
 
 .setup-step h4 {
   font-size: 0.75rem;
