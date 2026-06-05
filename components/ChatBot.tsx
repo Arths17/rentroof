@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import api from '@/lib/api';
 
 interface Message {
@@ -8,6 +8,66 @@ interface Message {
   content: string;
   sender: 'user' | 'assistant';
   timestamp: Date;
+}
+
+const suggestedPrompts = [
+  'How do I add a property?',
+  'Show me overdue payments',
+  'What maintenance is open?',
+];
+
+const timeFormatter = new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+function renderRichText(text: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const lines = text.split('\n');
+
+  const parseInline = (line: string, lineIndex: number) => {
+    const parts: ReactNode[] = [];
+    const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(line.slice(lastIndex, match.index));
+      }
+
+      const token = match[0];
+
+      if (token.startsWith('**') && token.endsWith('**')) {
+        parts.push(
+          <strong key={`${lineIndex}-${match.index}`}>{token.slice(2, -2)}</strong>
+        );
+      } else if (token.startsWith('*') && token.endsWith('*')) {
+        parts.push(<em key={`${lineIndex}-${match.index}`}>{token.slice(1, -1)}</em>);
+      } else if (token.startsWith('`') && token.endsWith('`')) {
+        parts.push(
+          <code key={`${lineIndex}-${match.index}`}>{token.slice(1, -1)}</code>
+        );
+      }
+
+      lastIndex = match.index + token.length;
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.slice(lastIndex));
+    }
+
+    return parts;
+  };
+
+  lines.forEach((line, lineIndex) => {
+    if (lineIndex > 0) {
+      nodes.push(<br key={`break-${lineIndex}`} />);
+    }
+    nodes.push(...parseInline(line, lineIndex));
+  });
+
+  return nodes;
 }
 
 export default function ChatBot() {
@@ -33,7 +93,7 @@ export default function ChatBot() {
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = 'auto';
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 100)}px`;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 104)}px`;
   }, [input]);
 
   useEffect(() => {
@@ -87,119 +147,119 @@ export default function ChatBot() {
     }
   };
 
-  return (
-    <div className="flex h-full flex-col bg-[color:var(--bg)]">
-      {/* Header */}
-      <div className="border-b px-4 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        <p className="text-sm font-medium text-[color:var(--paper)]">Chat</p>
-      </div>
+  const applyPrompt = (prompt: string) => {
+    setInput(prompt);
+    textareaRef.current?.focus();
+  };
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4" style={{ minHeight: 0 }}>
-        <div className="space-y-3">
+  return (
+    <div className="chatbot-panel">
+      <div className="chatbot-panel__grid" aria-hidden="true" />
+
+      <header className="chatbot-header">
+        <div className="chatbot-header__main">
+          <div className="chatbot-avatar chatbot-avatar--brand" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7 8.5C7 7.12 8.12 6 9.5 6h5C15.88 6 17 7.12 17 8.5v3C17 12.88 15.88 14 14.5 14H11l-3.5 3v-3H9.5C8.12 14 7 12.88 7 11.5v-3Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path d="M9.5 9.5h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M9.5 11.5h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="chatbot-header__copy">
+            <p className="chatbot-kicker">Personal AI Companion</p>
+            <h2 className="chatbot-title">RentProof Assistant</h2>
+            <p className="chatbot-subtitle">
+              Ask about properties, tenants, rent, maintenance, or deposits without leaving the dashboard.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="chatbot-body">
+        <section className="chatbot-prompts">
+          <p className="chatbot-section-label">Quick prompts</p>
+          <div className="chatbot-prompt-list">
+            {suggestedPrompts.map((prompt) => (
+              <button key={prompt} type="button" className="chatbot-prompt" onClick={() => applyPrompt(prompt)}>
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="chatbot-messages" aria-label="Chat messages">
           {messages.map((message) => {
             const isUser = message.sender === 'user';
             return (
-              <div
-                key={message.id}
-                className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className="max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed"
-                  style={{
-                    backgroundColor: isUser ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-                    color: '#fff',
-                  }}
-                >
-                  {message.content}
+              <div key={message.id} className={`chatbot-row ${isUser ? 'is-user' : 'is-assistant'}`}>
+                {!isUser && <div className="chatbot-avatar chatbot-avatar--assistant">RPA</div>}
+
+                <div className={`chatbot-bubble ${isUser ? 'chatbot-bubble--user' : 'chatbot-bubble--assistant'}`}>
+                  <div className="chatbot-bubble__text">{renderRichText(message.content)}</div>
+                  <div className={`chatbot-bubble__meta ${isUser ? 'is-user' : 'is-assistant'}`}>
+                    {timeFormatter.format(message.timestamp)}
+                  </div>
                 </div>
+
+                {isUser && <div className="chatbot-avatar chatbot-avatar--user">You</div>}
               </div>
             );
           })}
 
           {isLoading && (
-            <div className="flex justify-start">
-              <div
-                className="flex gap-1 rounded-2xl px-3 py-2"
-                style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-              >
-                <div
-                  className="h-1 w-1 animate-bounce rounded-full"
-                  style={{ backgroundColor: 'var(--mid)' }}
-                />
-                <div
-                  className="h-1 w-1 animate-bounce rounded-full"
-                  style={{ backgroundColor: 'var(--mid)', animationDelay: '0.1s' }}
-                />
-                <div
-                  className="h-1 w-1 animate-bounce rounded-full"
-                  style={{ backgroundColor: 'var(--mid)', animationDelay: '0.2s' }}
-                />
+            <div className="chatbot-row is-assistant">
+              <div className="chatbot-avatar chatbot-avatar--assistant">AI</div>
+              <div className="chatbot-typing">
+                <span className="chatbot-typing__dot" />
+                <span className="chatbot-typing__dot" />
+                <span className="chatbot-typing__dot" />
+                <span className="chatbot-typing__label">Thinking</span>
               </div>
             </div>
           )}
 
-          {error && (
-            <div className="flex justify-center">
-              <div
-                className="max-w-[75%] rounded-2xl px-3 py-2 text-center text-xs"
-                style={{
-                  backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                  color: '#fca5a5',
-                }}
-              >
-                {error}
-              </div>
-            </div>
-          )}
+          {error && <div className="chatbot-error">{error}</div>}
 
           <div ref={messagesEndRef} />
-        </div>
+        </section>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t px-3 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-          <div
-            className="flex flex-1 items-center rounded-xl border px-3"
-            style={{ borderColor: 'rgba(255,255,255,0.12)' }}
-          >
+      <footer className="chatbot-composer-wrap">
+        <form onSubmit={handleSendMessage} className="chatbot-composer">
+          <div className="chatbot-composer__field">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Message..."
+              placeholder="Ask the assistant..."
               disabled={isLoading}
               rows={1}
-              className="w-full resize-none bg-transparent py-2 text-sm outline-none placeholder:text-[rgba(255,255,255,0.4)] disabled:cursor-not-allowed"
-              style={{ color: 'var(--paper)', minHeight: '1.75rem', maxHeight: '80px' }}
+              className="chatbot-composer__input"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-opacity disabled:opacity-40"
-            style={{
-              backgroundColor: isLoading || !input.trim() ? 'rgba(232,79,43,0.3)' : 'var(--accent)',
-              color: '#fff',
-              border: 'none',
-            }}
+            className="chatbot-send"
             aria-label="Send"
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor" />
             </svg>
           </button>
         </form>
-      </div>
+
+        <p className="chatbot-composer-hint">Press Enter to send, Shift+Enter for a new line</p>
+      </footer>
     </div>
   );
 }

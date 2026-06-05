@@ -4,3 +4,5 @@ pydantic==2.5.0
 python-dotenv==1.0.0
 cors==1.0.1
 python-multipart==0.0.6
+email-validator
+google-genai

@@ -28,22 +28,25 @@ def send_welcome_email(to_email: str, name: str = "") -> None:
 
 		content = f"""Dear {name or 'Valued User'},
 
-Thank you for joining RentProof. We're excited to have you as part of our community.
+Thank you for joining the RentProof community! We're thrilled to have you on board with us and can't wait for you to work with us to simplify your property management experience.
 
-RentProof is your comprehensive property management platform designed to streamline operations, enhance communication with tenants, and provide real-time insights into your rental portfolio.
+RentProof is your personal comprehensive property management platform specifically designed to simplify operations, enhance communication and trust with tenants, and provide real-time insights into your rentak portfolio.
 
 KEY FEATURES
 
-Property Management Dashboard
-  • Centralized view of all your properties and units
+Property Management Dahsboard
+  • Centralized view of all your properties and units, no matter how many you have
   • Detailed property analytics and performance metrics
   • Easy multi-property management
+  • Your personal AI assistant, RentProof Assistant(RPA), to help you handle all of your property management needs
 
 Tenant Portal & Communication
-  • Secure tenant portal for lease management
-  • Streamlined rent payment processing
-  • Maintenance request tracking system
-  • Direct communication channels
+	• Stable and secure tentant portal for lease management
+	• Simplified rent payment processing
+	• Maintenance request tracking system
+	• Direct communication channels between landlord
+	• A safe locker with all of your important documents and leases
+	• A personal, powerful AI assistant to help the tenants with any questions they have about their lease, rent payments, or maintenance requests
 
 Documentation & Compliance
   • Digital lease storage and management

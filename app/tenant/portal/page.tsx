@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import api from '@/lib/api'
 import DashboardHeader from '@/components/layout/DashboardHeader'
 import { useSession } from '@/hooks/useSession'
+import ChatBot from '@/components/ChatBot'
 
 interface TenantPortalData {
   tenant: {
@@ -106,6 +107,12 @@ export default function TenantPortalPage() {
           onClick={() => router.push('/properties')}
         >
           📍 Properties
+        </button>
+        <button 
+          className={`nav-btn${pathname === '/tenant/assistant' ? ' active' : ''}`}
+          onClick={() => router.push('/tenant/assistant')}
+        >
+          🤖 Assistant
         </button>
         <button 
           className={`nav-btn${pathname === '/maintenance' ? ' active' : ''}`}
@@ -237,6 +244,12 @@ export default function TenantPortalPage() {
           Move-in Walkthrough
         </button>
       </div>
+      
+      <aside className="dash-sidebar">
+        <div className="dash-assistant-container">
+          <ChatBot />
+        </div>
+      </aside>
     </div>
     </>
   )
